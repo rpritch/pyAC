@@ -141,6 +141,9 @@ if __name__ == "__main__":
     print("iterations=", it)
     mask = np.zeros_like(phi, np.uint8)
     mask[phi < 0] = 255
+    labels = measure.label(mask)
+
+    
     plt.imshow(mask)
     plt.show(block=True)
     plt.imshow(img, cmap='gray')

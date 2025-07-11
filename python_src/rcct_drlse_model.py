@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage import measure
 from tqdm import tqdm
-from utils import initial_phi, Neumann, distance_reg_term, area_term, length_term, Dirac
+from utils import init_phi, Neumann, distance_reg_term, area_term, length_term, Dirac
 
 
 def ci(img, phi, ki, epsilon):
@@ -38,7 +38,7 @@ def RCCT_term(img, phi, k1, k2, beta1=0, beta2=0, epsilon=1.0):
 
 
 def RCCT_DRLSEmodel(img, max_iter, lmda=5.0, epsilon=1.5, sigma=1.5, alpha=1.5, mu=0.2, k1=-1.5, k2=1.5, beta1=0.0, beta2=0.0, timestep=1.0):
-    phi = initial_phi(img)
+    phi = init_phi(img)
     h, w = phi.shape
     AREA = h * w
 
@@ -62,7 +62,7 @@ def RCCT_DRLSEmodel(img, max_iter, lmda=5.0, epsilon=1.5, sigma=1.5, alpha=1.5, 
 
 
 if __name__ == "__main__":
-    img = cv2.imread("./test2.png", 0)
+    img = cv2.imread("D:/pyAC/data/filtered_data0005.png", 0)
     h, w = img.shape
     phi = 2 * np.ones((h, w))
     phi[20: -20, 20: -20] = -2

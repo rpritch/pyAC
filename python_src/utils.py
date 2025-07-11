@@ -4,6 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter, laplace
 
+def init_phi(img):
+    thresh = np.percentile(img,95)
+    phi = 2*np.ones(img.shape)
+    phi[img>=thresh] = -2
+    return phi
 
 def div_phi(phi):
     [phi_y, phi_x] = np.gradient(phi)
