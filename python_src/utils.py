@@ -39,6 +39,11 @@ def load_image_stack(directory, template, digits=4, extension=".png"):
     stack = [cv2.imread(fp,0) for fp in sorted_files]
     return np.stack(stack)
 
+def init_phi(img):
+    thresh = np.percentile(img,95)
+    phi = 2*np.ones(img.shape)
+    phi[img>=thresh] = -2
+    return phi
 
 def div_phi(phi):
     [phi_y, phi_x] = np.gradient(phi)

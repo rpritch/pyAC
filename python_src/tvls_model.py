@@ -10,7 +10,7 @@ import numpy as np
 from scipy.ndimage import laplace
 from skimage import measure
 from tqdm import tqdm
-
+from utils import init_phi
 
 def denoise(im, U_init, tolerance=0.1, tau=0.125, tv_weight=100):
     """ An implementation of the Rudin-Osher-Fatemi (ROF) denoising model
@@ -76,6 +76,7 @@ def denoise(im, U_init, tolerance=0.1, tau=0.125, tv_weight=100):
 def TVLSModel(imgU8C1, c0=0.5, itermax=1000, tolerance=1e-4, timestep=0.1):
     imgF64 = imgU8C1.astype(np.float64)
     phi = c0 * np.ones_like(imgF64, dtype=np.float64)
+    # phi = init_phi(imgU8C1)
     u, T = denoise(imgU8C1, imgU8C1)
 
     for it in tqdm(range(itermax)):
@@ -102,10 +103,8 @@ def TVLSModel(imgU8C1, c0=0.5, itermax=1000, tolerance=1e-4, timestep=0.1):
 
 
 if __name__ == "__main__":
-    img = cv2.imread("./test2.png", 0)
+    img = cv2.imread("D:/pyAC/data/filtered_data0005.png", 0)
     h, w = img.shape
-    phi = 2 * np.ones((h, w))
-    phi[20: -20, 20: -20] = -2
     phi, iterations = TVLSModel(img)
     contours = measure.find_contours(phi, 0)
     for cnt in contours:

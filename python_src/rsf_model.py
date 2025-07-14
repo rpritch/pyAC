@@ -10,6 +10,7 @@ import numpy as np
 from scipy.ndimage import laplace
 from skimage import measure
 from tqdm import tqdm
+from utils import init_phi
 
 
 def RSFmodel(img, phi, sigma=3.0, lmda1=1.0, lmda2=1.0, nu=0.002*255**2, mu=2.0, timestep=0.1, max_iter=1000, tolerance=1e-4, show_figure=False):
@@ -80,24 +81,51 @@ def RSFmodel(img, phi, sigma=3.0, lmda1=1.0, lmda2=1.0, nu=0.002*255**2, mu=2.0,
                     ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
                 plt.pause(0.1)
 
-    if show_figure:
-        fig2 = plt.figure(2)
-        ax = fig2.add_subplot(111)
-        xlist = [i for i in range(len(criteria_Fnorms))]
-        ax.plot(xlist, criteria_Fnorms, c='r', label='Fnorm')
-        ax.legend()
-        ax.set_title("convergence of the level set function <phi>")
-        plt.show()
-
+    # if show_figure:
+    #     fig2 = plt.figure(2)
+    #     ax = fig2.add_subplot(111)
+    #     xlist = [i for i in range(len(criteria_Fnorms))]
+    #     ax.plot(xlist, criteria_Fnorms, c='r', label='Fnorm')
+    #     ax.legend()
+    #     ax.set_title("convergence of the level set function <phi>")
+    #     plt.show()
+    plt.close()
     return phi, it+1
 
 
 if __name__ == "__main__":
-    img = cv2.imread("./test2.png", 0)
+    img = cv2.imread("D:/pyAC/data/filtered_data0003.png", 0)
     h, w = img.shape
-    phi = 2 * np.ones((h, w))
-    phi[20: -20, 20: -20] = -2
-    phi, iterations = RSFmodel(img, phi, show_figure=True)
+    # phi = 2 * np.ones((h, w))
+    # phi[20: -20, 20: -20] = -2
+    phi = init_phi(img)
+    phi, iterations = RSFmodel(img, phi, nu=0.0005*512**2,max_iter=1000,show_figure=True)
+    mask = phi < 0
+    objects = measure.label(mask)
+    temp_img = img.copy()
+    temp_img = temp_img.astype(float)
+    object_sizes = [np.sum(objects==val) for val in np.unique(objects)]
+    while any(np.array(object_sizes)>500):
+        temp_phi = phi.copy()
+        for val in np.unique(objects):
+            if val == 0:
+                continue
+            if np.sum(objects == val)>200:
+                val_idx = objects==val
+                temp_phi[val_idx] = (temp_phi[val_idx] - temp_phi[val_idx].min())/(temp_phi[val_idx].max()-temp_phi.min())
+                max_val = temp_img[val_idx].max()
+                temp_img[val_idx] = np.log(1+temp_img[val_idx]/255)
+                temp = max_val*(temp_img[val_idx] - temp_img[val_idx].min())/(temp_img[val_idx].max()-temp_img[val_idx].min())
+                temp_img[val_idx] = (1-temp_phi[val_idx])*img[val_idx] + temp_phi[val_idx]*temp
+        img = temp_img.astype(np.uint8)
+        # img[mask==0] = np.mean(img[mask==0])
+        phi,iterations = RSFmodel(img,phi,nu=0.0005*512**2,max_iter=1000,show_figure=True,tolerance=1e-4)
+        mask = phi < 0
+        objects = measure.label(mask)
+        object_sizes = [np.sum(objects==val) for val in np.unique(objects[objects>0])]
+        temp_img = img.copy()
+        temp_img = temp_img.astype(float)
+
     contours = measure.find_contours(phi, 0)
     for cnt in contours:
         plt.plot(cnt[:, 1], cnt[:, 0], linewidth=2)

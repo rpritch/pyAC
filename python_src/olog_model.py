@@ -11,10 +11,10 @@ from scipy.ndimage import laplace
 from skimage import measure
 from tqdm import tqdm
 
-from utils import Neumann, cvtBrightObject
+from utils import Neumann, cvtBrightObject, init_phi
 
 
-def OLoGmodel(img, phi, sigma=3.0, lmda1=1.0, lmda2=1.0, omega=10.0, nu=0.002*255**2, mu=2.0, timestep=0.1, max_iter=1000, tolerance=1e-4, show_figure=False):
+def OLoGmodel(img, phi, sigma=3.0, lmda1=1.0, lmda2=1.0, omega=10.0, nu=0.002*255**2, mu=2.0, timestep=0.1, max_iter=2000, tolerance=1e-4, show_figure=False):
     img = cvtBrightObject(img)
     size = int(np.round(sigma * 2) * 2 + 1)
 
@@ -111,10 +111,11 @@ def OLoGmodel(img, phi, sigma=3.0, lmda1=1.0, lmda2=1.0, omega=10.0, nu=0.002*25
 
 
 if __name__ == "__main__":
-    img = cv2.imread("./test2.png", 0)
+    img = cv2.imread("D:/pyAC/data/filtered_data0005.png", 0)
     h, w = img.shape
-    phi = 2 * np.ones((h, w))
-    phi[20: -20, 20: -20] = -2
+    # phi = 2 * np.ones((h, w))
+    # phi[20: -20, 20: -20] = -2
+    phi = init_phi(img)
     phi, iterations = OLoGmodel(img, phi, show_figure=True)
     contours = measure.find_contours(phi, 0)
     for cnt in contours:

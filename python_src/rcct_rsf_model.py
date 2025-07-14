@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from utils import initial_phi, Neumann, simple_distance_reg_term, area_term, length_term, Dirac, Heaviside, div_phi
+from utils import init_phi, Neumann, simple_distance_reg_term, area_term, length_term, Dirac, Heaviside, div_phi
 
 from skimage import measure
 
@@ -59,7 +59,7 @@ def RCCT_term(img, phi, k1, k2, beta1=0, beta2=0, epsilon=1.5):
 
 def RCCT_RSFmodel(img, max_iter, lmda1=1.0, lmda2=1.0, epsilon=1.5, sigma=3.5, k1=-1.5, k2=1.5, beta1=0.05 , beta2=0.01, mu=1.5, nu=0.003*255**2, timestep=0.1, bright_object=True):
 
-    phi = initial_phi(img)
+    phi = init_phi(img)
     h, w = phi.shape
     AREA = h * w
     for it in tqdm(range(max_iter)):
@@ -75,18 +75,16 @@ def RCCT_RSFmodel(img, max_iter, lmda1=1.0, lmda2=1.0, epsilon=1.5, sigma=3.5, k
 
         new_phi_area = np.sum(phi < 0)
         criteria = np.abs(old_phi_area - new_phi_area) / AREA
-        if criteria < 1e-5:
+        if criteria < 1e-12:
             break
 
     return phi, rsf
 
 
 if __name__ == "__main__":
-    img = cv2.imread("./test2.png", 0)
+    img = cv2.imread("D:/pyAC/data/filtered_data0005.png", 0)
     h, w = img.shape
-    phi = 2 * np.ones((h, w))
-    phi[20: -20, 20: -20] = -2
-    phi, iterations = RCCT_RSFmodel(img, max_iter=1000)
+    phi, iterations = RCCT_RSFmodel(img, max_iter=2000)
     contours = measure.find_contours(phi, 0)
     for cnt in contours:
         plt.plot(cnt[:, 1], cnt[:, 0], linewidth=2)
