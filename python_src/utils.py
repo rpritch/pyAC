@@ -3,6 +3,41 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter, laplace
+import os
+import re
+def load_image_stack(directory, template, digits=4, extension=".png"):
+    """
+    Load an image stack from a directory based on filename template and digit count.
+    
+    Args:
+        directory (str): Path to the directory containing image files.
+        template (str): Filename prefix or partial pattern (e.g., 'img_').
+        digits (int): Number of digits for the numeric part (e.g., 4 for '0001').
+        extension (str): File extension (default: '.tif').
+    
+    Returns:
+        numpy.ndarray: Stacked images as a 3D or 4D NumPy array.
+    """
+    # Create regex pattern like 'img_(\d{4})\.tif'
+    pattern = re.compile(rf"{re.escape(template)}(\d{{{digits}}}){re.escape(extension)}$")
+    
+    files = []
+    for fname in os.listdir(directory):
+        match = pattern.match(fname)
+        if match:
+            index = int(match.group(1))  # Convert string with leading zeros to int
+            full_path = os.path.join(directory, fname)
+            files.append((index, full_path))
+
+    if not files:
+        raise FileNotFoundError(f"No matching files found with template '{template}', digits={digits}, and extension '{extension}'")
+
+    # Sort by numeric index
+    sorted_files = [fp for _, fp in sorted(files)]
+
+    # Load images
+    stack = [cv2.imread(fp,0) for fp in sorted_files]
+    return np.stack(stack)
 
 
 def div_phi(phi):
@@ -288,5 +323,10 @@ def cvtBrightObject(img, darkobject=False):
 
 
 
-
+if __name__ == "__main__":
+    stack = load_image_stack("D:/pyAC/data","filtered_data")
+    for image in stack:
+        plt.imshow(image)
+        plt.show(block=True)
+    print(stack.shape)
 

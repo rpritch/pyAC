@@ -62,7 +62,7 @@ def initial_phi(h, w, phi_type="f-b+"):
     return  phi0
 
 
-def CVmodel(image, iternum=100, mu=4, nu=1, lambda1=1.0, lambda2=1.0):
+def CVmodel(image, iternum=100, mu=4, nu=1, lambda1=100.0, lambda2=1.0):
     eps = 1
     timestep = 0.25 / mu
     h, w = image.shape
